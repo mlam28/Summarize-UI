@@ -2,6 +2,7 @@ import React from 'react';
 import { styled } from '@mui/material/styles'; 
 import { Button } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
+import axios from 'axios';
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -25,22 +26,27 @@ class Uploadform extends React.Component {
 
     onFileChange = (event) => {
         this.setState({
-            selecteeFile: event.target.files[0],
+            selectedFile: event.target.files[0],
         });
     }
 
     onFileUpload = () => {
         const formData = new FormData();
+        debugger;
 
         formData.append(
             "fileName",
             this.state.selectedFile,
-            this.state.selectedFile.name
+            this.state.selectedFile.name,
+            this.state.selectedFile.type,
         )
+
+        axios.post 
     }
 
     render() {
         return (
+            <div>
             <Button
                 component="label"
                 role={undefined}
@@ -49,8 +55,22 @@ class Uploadform extends React.Component {
                 startIcon={<CloudUpload />}
             >
                 Upload File
-                <VisuallyHiddenInput type="file" />
+                <VisuallyHiddenInput onChange={this.onFileChange} type="file" />
             </Button>
+                {this.state.selectedFile &&
+                <div>
+                    <div>
+                        <p>File Name: {this.state.selectedFile.name} </p>
+                        <p>File Type: {this.state.selectedFile.type}</p>
+                    </div>
+                    <div>
+                        <Button onClick={this.onFileUpload}>
+                            Summarize
+                        </Button>
+                    </div>
+                </div>
+                 }
+            </div>
         )
     }
 }
