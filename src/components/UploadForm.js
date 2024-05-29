@@ -72,7 +72,6 @@ const UploadForm = ({ handleOutput }) => {
                 withCredentials: false,
                 timeout: 1000000,
             });
-            console.log(response);
             handleOutput(response.data);
         } catch (error) {
             console.error("There was an error uploading the file!", error);
