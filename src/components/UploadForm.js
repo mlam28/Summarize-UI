@@ -1,6 +1,6 @@
-import React from 'react';
-import { styled } from '@mui/material/styles'; 
-import { Button } from '@mui/material';
+import React, { useState, useRef } from 'react';
+import { styled } from '@mui/material/styles';
+import { Button, Box, Typography } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
 import axios from 'axios';
 
@@ -14,65 +14,101 @@ const VisuallyHiddenInput = styled('input')({
     left: 0,
     whiteSpace: 'nowrap',
     width: 1,
-  });
+});
 
-class Uploadform extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            selectedFile: null,
+const DropArea = styled(Box)(({ theme }) => ({
+    border: `2px dashed ${theme.palette.primary.main}`,
+    padding: theme.spacing(2),
+    borderRadius: theme.shape.borderRadius,
+    textAlign: 'center',
+    cursor: 'pointer',
+}));
+
+const UploadForm = ({ handleOutput }) => {
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = useRef(null);
+
+    const onFileChange = (event) => {
+        console.log('on file change');
+        setSelectedFile(event.target.files[0]);
+    };
+
+    const onDrop = (event) => {
+        event.preventDefault();
+        setIsDragging(false);
+        if (event.dataTransfer.files && event.dataTransfer.files[0]) {
+            setSelectedFile(event.dataTransfer.files[0]);
         }
+    };
+
+    const onDragOver = (event) => {
+        event.preventDefault();
+        setIsDragging(true);
+    };
+
+    const onDragLeave = (event) => {
+        event.preventDefault();
+        setIsDragging(false);
+    };
+
+    const onFileCancel = (event) => {
+        setSelectedFile(undefined);
     }
 
-    onFileChange = (event) => {
-        this.setState({
-            selectedFile: event.target.files[0],
-        });
-    }
+    const onFileUpload = async () => {
+        if (!selectedFile) {
+            alert("Please select a file first!");
+            return;
+        }
 
-    onFileUpload = () => {
         const formData = new FormData();
-        debugger;
+        formData.append("file", selectedFile, selectedFile.name);
+        try {
+            const response = await axios.post('https://llamasummarizer.onrender.com/summarize', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                withCredentials: false,
+                timeout: 1000000,
+            });
+            console.log(response);
+            handleOutput(response.data);
+        } catch (error) {
+            console.error("There was an error uploading the file!", error);
+            alert("File upload failed!");
+        }
+    };
 
-        formData.append(
-            "fileName",
-            this.state.selectedFile,
-            this.state.selectedFile.name,
-            this.state.selectedFile.type,
-        )
+    const handleClick = () => {
+        fileInputRef.current.click();
+    };
 
-        axios.post 
-    }
-
-    render() {
-        return (
-            <div>
-            <Button
-                component="label"
-                role={undefined}
-                variant="contained"
-                taxIndex={-1}
-                startIcon={<CloudUpload />}
+    return (
+        <div>
+            <DropArea
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+                onClick={handleClick}
+                className={`p-4 ${isDragging ? 'bg-blue-50' : ''}`}
             >
-                Upload File
-                <VisuallyHiddenInput onChange={this.onFileChange} type="file" />
-            </Button>
-                {this.state.selectedFile &&
-                <div>
-                    <div>
-                        <p>File Name: {this.state.selectedFile.name} </p>
-                        <p>File Type: {this.state.selectedFile.type}</p>
-                    </div>
-                    <div>
-                        <Button onClick={this.onFileUpload}>
-                            Summarize
-                        </Button>
-                    </div>
-                </div>
-                 }
+                <CloudUpload fontSize="large" />
+                <Typography variant="h6">
+                    {selectedFile ? selectedFile.name : "Drag and drop a file here, or click to select a file"}
+                </Typography>
+                <VisuallyHiddenInput
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={onFileChange}
+                />
+            </DropArea>
+            <div className="mt-4 flex justify-between">
+                <Button variant="contained" color="primary" onClick={onFileUpload} >Run</Button>
+                <Button variant="outlined" color="secondary" onClick={onFileCancel}>Reset</Button>
             </div>
-        )
-    }
-}
+        </div>
+    );
+};
 
-export default Uploadform;
+export default UploadForm;
