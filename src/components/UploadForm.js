@@ -77,7 +77,7 @@ const UploadForm = ({ handleOutput, toggleLoading }) => {
             toggleLoading(false);
         } catch (error) {
             console.error("There was an error uploading the file!", error);
-            alert("File upload failed!");
+            handleOutput(error.message);
         } finally {
             toggleLoading(false);
         }
