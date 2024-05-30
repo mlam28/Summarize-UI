@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
 import {
-    Container,
     TextField,
     Button,
     Grid,
@@ -70,7 +69,7 @@ function App() {
             handleOutput(response.data);
         } catch (error) {
             console.error("There was an error uploading the file!", error);
-            alert("File upload failed!");
+            handleOutput(error.message);
         }
         finally {
             setIsLoading(false);
