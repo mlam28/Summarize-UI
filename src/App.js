@@ -14,6 +14,8 @@ import {
 } from '@mui/material';
 import UploadForm from './components/UploadForm';
 import axios from "axios";
+import logo from './assets/logo.png';
+import {Image} from "@mui/icons-material";
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -92,12 +94,12 @@ function App() {
 
 
     return (
-        <div className="App">
+        <div className="App bg-[#f4f4f4] min-h-screen" >
             <Backdrop open={isLoading}>
                 <CircularProgress color="inherit"/>
             </Backdrop>
-            <header className="text-center my-8">
-                <h1 className="text-4xl font-bold">One Summary</h1>
+            <header className="justify-center items-center flex my-8">
+                <img style={{width: '50%'}} src={require('./assets/logo.png')}/>
             </header>
 
             <Grid container spacing={2}>
