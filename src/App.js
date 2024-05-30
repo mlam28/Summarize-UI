@@ -10,7 +10,7 @@ import {
     Tab,
     Box,
     CircularProgress,
-    Backdrop
+    Backdrop, Checkbox, FormControlLabel, FormGroup
 } from '@mui/material';
 import UploadForm from './components/UploadForm';
 import axios from "axios";
@@ -40,6 +40,8 @@ function App() {
     const [tabIndex, setTabIndex] = useState(0);
     const [inputText, setInputText] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isFollowUpQuestion, setIsFollowUpQuestion] = useState(false);
+    const [originalText, setOriginalText] = useState('');
 
     const handleTabChange = (event, newIndex) => {
         setTabIndex(newIndex);
@@ -57,14 +59,23 @@ function App() {
         try {
             setIsLoading(true);
             const formData = new FormData();
-            const file = new Blob([inputText], {type: 'text/plain'})
+            let file;
+            if (isFollowUpQuestion) {
+                file = new Blob([originalText], {type: 'text/plain'})
+                formData.append("followUpQuestion", inputText);
+            }
+            else {
+                file = new Blob([inputText], {type: 'text/plain'})
+                setOriginalText(inputText);
+            }
             formData.append("file", file, 'plaintext.txt');
+            formData.append("isFollowUpQuestion", isFollowUpQuestion);
             const response = await axios.post('https://llamasummarizer.onrender.com/summarize', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
                 withCredentials: false,
-                timeout: 1000000,
+                timeout: 100000000,
             });
             handleOutput(response.data);
         } catch (error) {
@@ -110,6 +121,12 @@ function App() {
                             />
                             <Button variant="contained" color="primary" onClick={onRun} >Run</Button>
                             <Button variant="outlined" color="secondary" onClick={onCancel}>Reset</Button>
+                            <FormGroup>
+                                <FormControlLabel label="Is this a follow up question?"
+                                                  control={<Checkbox value={isFollowUpQuestion}
+                                                  onChange={() => setIsFollowUpQuestion(!isFollowUpQuestion)}/>
+                                }/>
+                            </FormGroup>
                         </TabPanel>
                         <TabPanel value={tabIndex} index={1}>
                             <UploadForm
