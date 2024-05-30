@@ -24,7 +24,7 @@ const DropArea = styled(Box)(({ theme }) => ({
     cursor: 'pointer',
 }));
 
-const UploadForm = ({ handleOutput }) => {
+const UploadForm = ({ handleOutput, toggleLoading }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef(null);
@@ -65,6 +65,7 @@ const UploadForm = ({ handleOutput }) => {
         const formData = new FormData();
         formData.append("file", selectedFile, selectedFile.name);
         try {
+            toggleLoading(true);
             const response = await axios.post('https://llamasummarizer.onrender.com/summarize', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -73,9 +74,12 @@ const UploadForm = ({ handleOutput }) => {
                 timeout: 1000000,
             });
             handleOutput(response.data);
+            toggleLoading(false);
         } catch (error) {
             console.error("There was an error uploading the file!", error);
             alert("File upload failed!");
+        } finally {
+            toggleLoading(false);
         }
     };
 

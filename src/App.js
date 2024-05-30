@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
 import './App.css';
-import { Container, TextField, Button, Grid, Paper, Divider, Tabs, Tab, Box } from '@mui/material';
+import {
+    Container,
+    TextField,
+    Button,
+    Grid,
+    Paper,
+    Divider,
+    Tabs,
+    Tab,
+    Box,
+    CircularProgress,
+    Backdrop
+} from '@mui/material';
 import UploadForm from './components/UploadForm';
+import axios from "axios";
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -26,6 +39,8 @@ function TabPanel(props) {
 function App() {
     const [output, setOutput] = useState("Here will be your output...");
     const [tabIndex, setTabIndex] = useState(0);
+    const [inputText, setInputText] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleTabChange = (event, newIndex) => {
         setTabIndex(newIndex);
@@ -35,9 +50,42 @@ function App() {
         setOutput(value);
     };
 
+    const toggleLoading = (value) => {
+        setIsLoading(value);
+    };
+
+    const onRun = async (value) => {
+        const body = {
+            text: inputText,
+        };
+        try {
+            setIsLoading(true);
+            const response = await axios.post('https://llamasummarizer.onrender.com/summarize', body, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                withCredentials: false,
+                timeout: 1000000,
+            });
+            handleOutput(response.data);
+        } catch (error) {
+            console.error("There was an error uploading the file!", error);
+            alert("File upload failed!");
+        }
+        finally {
+            setIsLoading(false);
+        }
+    };
+    const onCancel = () => {
+        setInputText('');
+    };
+
 
     return (
         <div className="App">
+            <Backdrop open={isLoading}>
+                <CircularProgress color="inherit"/>
+            </Backdrop>
             <header className="text-center my-8">
                 <h1 className="text-4xl font-bold">One Summary</h1>
             </header>
@@ -58,11 +106,16 @@ function App() {
                                 rows={10}
                                 fullWidth
                                 variant="outlined"
+                                value={inputText}
+                                onChange={(event) => setInputText(event.target.value)}
                             />
+                            <Button variant="contained" color="primary" onClick={onRun} >Run</Button>
+                            <Button variant="outlined" color="secondary" onClick={onCancel}>Reset</Button>
                         </TabPanel>
                         <TabPanel value={tabIndex} index={1}>
                             <UploadForm
                                 handleOutput={handleOutput}
+                                toggleLoading={toggleLoading}
                             />
                         </TabPanel>
                     </Paper>
