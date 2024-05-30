@@ -55,14 +55,14 @@ function App() {
     };
 
     const onRun = async (value) => {
-        const body = {
-            text: inputText,
-        };
         try {
             setIsLoading(true);
-            const response = await axios.post('https://llamasummarizer.onrender.com/summarize', body, {
+            const formData = new FormData();
+            const file = new Blob([inputText], {type: 'text/plain'})
+            formData.append("file", file, 'plaintext.txt');
+            const response = await axios.post('https://llamasummarizer.onrender.com/summarize', formData, {
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'multipart/form-data',
                 },
                 withCredentials: false,
                 timeout: 1000000,
